@@ -45,6 +45,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -54,7 +55,7 @@ dependencies {
     implementation(libs.androidx.navigation)
     //Room DB
     implementation(libs.androidx.room)
-    annotationProcessor(libs.androidx.room.compiler)
+    kapt(libs.androidx.room.compiler)
     //Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)

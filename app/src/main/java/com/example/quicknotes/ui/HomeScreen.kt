@@ -28,14 +28,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.example.quicknotes.R
+import com.example.quicknotes.common.NavigationRoutes
 import com.example.quicknotes.ui.theme.Typography
+import com.example.quicknotes.ui.viewmodel.HomeViewModel
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController, homeViewModel: HomeViewModel) {
+    var notesList = homeViewModel.getAllNotesList().collectAsStateWithLifecycle().value
+
 
     val distance = 12.dp
     val isGrid = remember {
@@ -72,7 +77,8 @@ fun HomeScreen() {
                     .clip(CircleShape)
                     .size(24.dp)
                     .clickable {
-                        isGrid.value = isGrid.value.not()
+                        navController.navigate(NavigationRoutes.AddNote.route)
+                        //isGrid.value = isGrid.value.not()
                     }
             )
         }
@@ -85,7 +91,7 @@ fun HomeScreen() {
             verticalArrangement = Arrangement.spacedBy(distance),
             horizontalArrangement = Arrangement.spacedBy(distance)
         ) {
-            items(5) { index ->
+            items(notesList.size) { index ->
                 NotesCard()
             }
         }
