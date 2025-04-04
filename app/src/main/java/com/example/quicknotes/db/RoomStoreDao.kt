@@ -7,26 +7,23 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RoomStoreDao {
-
     @Upsert
     suspend fun upsertDataModel(dataModel: NotesModel)
 
     @Query("SELECT * FROM QuickNote ORDER BY updatedAt ASC")
-    fun getAllNotesList(): StateFlow<List<NotesModel>>
+    fun getAllNotesList(): Flow<List<NotesModel>>
 
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertNote(user: NotesModel): Boolean
+    suspend fun insertNote(user: NotesModel): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateNote(user: NotesModel)
 
     @Delete
     fun deleteNote(user: NotesModel)
-
-
 }

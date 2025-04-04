@@ -39,7 +39,7 @@ import com.example.quicknotes.ui.viewmodel.HomeViewModel
 //@Preview(showBackground = true)
 @Composable
 fun HomeScreen(navController: NavHostController, homeViewModel: HomeViewModel) {
-    var notesList = homeViewModel.getAllNotesList().collectAsStateWithLifecycle().value
+    var notesList = homeViewModel.getAllNotesList().collectAsStateWithLifecycle(emptyList()).value
 
 
     val distance = 12.dp

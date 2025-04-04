@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.navigation)
     //Room DB
     implementation(libs.androidx.room)
+    implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
     //Hilt
     implementation(libs.hilt.android)

@@ -46,7 +46,8 @@ fun CreateNote(navController: NavHostController, homeViewModel: HomeViewModel) {
 
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = "BackToHome"
+                contentDescription = "BackToHome",
+                modifier = Modifier.clickable { navController.popBackStack() }
             )
 
             Icon(
@@ -55,6 +56,8 @@ fun CreateNote(navController: NavHostController, homeViewModel: HomeViewModel) {
             )
 
             Text("Save", modifier = Modifier.clickable {
+                if (titleText.isEmpty() && noteText.isEmpty()) return@clickable
+
                 homeViewModel.addNote(
                     NotesModel(
                         title = titleText,
