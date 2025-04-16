@@ -14,4 +14,8 @@ class AppRepo @Inject constructor(private val roomStoreDao: RoomStoreDao) {
     suspend fun insertNote(notesModel: NotesModel): Long {
         return roomStoreDao.insertNote(notesModel)
     }
+
+    fun deleteNote(notesModel: NotesModel): Integer {
+        return roomStoreDao.deleteNote(notesModel)
+    }
 }

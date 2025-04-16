@@ -15,8 +15,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.quicknotes.common.NavigationRoutes
-import com.example.quicknotes.ui.CreateNote
 import com.example.quicknotes.ui.HomeScreen
+import com.example.quicknotes.ui.NoteScreen
 import com.example.quicknotes.ui.theme.QuickNotesTheme
 import com.example.quicknotes.ui.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,7 +44,9 @@ class MainActivity : ComponentActivity() {
             Modifier.padding(innerPadding)
         ) {
             composable(NavigationRoutes.Home.route) { HomeScreen(navController, homeViewModel) }
-            composable(NavigationRoutes.AddNote.route) { CreateNote(navController, homeViewModel) }
+            composable(NavigationRoutes.NoteScreen.route) {
+                NoteScreen(homeViewModel) { navController.popBackStack() }
+            }
         }
     }
 }

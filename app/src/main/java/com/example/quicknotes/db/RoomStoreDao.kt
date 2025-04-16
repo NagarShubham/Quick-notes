@@ -14,7 +14,7 @@ interface RoomStoreDao {
     @Upsert
     suspend fun upsertDataModel(dataModel: NotesModel)
 
-    @Query("SELECT * FROM QuickNote ORDER BY updatedAt ASC")
+    @Query("SELECT * FROM QuickNote ORDER BY updatedAt DESC")
     fun getAllNotesList(): Flow<List<NotesModel>>
 
 
@@ -25,5 +25,5 @@ interface RoomStoreDao {
     fun updateNote(user: NotesModel)
 
     @Delete
-    fun deleteNote(user: NotesModel)
+    fun deleteNote(user: NotesModel): Integer
 }

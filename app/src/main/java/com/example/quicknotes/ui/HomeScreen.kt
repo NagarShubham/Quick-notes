@@ -43,8 +43,7 @@ private val distance = 10.dp
 //@Preview(showBackground = true)
 @Composable
 fun HomeScreen(navController: NavHostController, homeViewModel: HomeViewModel) {
-    var notesList = homeViewModel.getAllNotesList().collectAsStateWithLifecycle(emptyList()).value
-
+    var notesList: List<NotesModel> = homeViewModel.noteList.collectAsStateWithLifecycle().value
     var isGrid by remember { mutableStateOf(true) }
 
     Column(
@@ -53,14 +52,22 @@ fun HomeScreen(navController: NavHostController, homeViewModel: HomeViewModel) {
             .padding(horizontal = 4.dp)
     ) {
         HomeHeader(isGrid = isGrid, onGridClick = { isGrid = !isGrid }) {
-            navController.navigate(NavigationRoutes.AddNote.route)
+            homeViewModel.setSelectedNote(null)
+            navController.navigate(NavigationRoutes.NoteScreen.route)
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(if (isGrid) 2 else 1), // Set the number of rows
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(distance),
             horizontalArrangement = Arrangement.spacedBy(distance)
-        ) { items(notesList) { NotesCard(it) } }
+        ) {
+            items(notesList) {
+                NotesCard(it) {
+                    homeViewModel.setSelectedNote(it)
+                    navController.navigate(NavigationRoutes.NoteScreen.route)
+                }
+            }
+        }
     }
 }
 
@@ -102,12 +109,13 @@ private fun HomeHeader(
 
 //@Preview(showBackground = true)
 @Composable
-private fun NotesCard(model: NotesModel) {
+private fun NotesCard(model: NotesModel, onNoteClick: () -> Unit) {
     Column(
         Modifier
             .defaultMinSize(minWidth = 120.dp, minHeight = 120.dp)
             .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
             .padding(14.dp)
+            .clickable(onClick = onNoteClick)
     ) {
         Text(
             model.title,
@@ -116,7 +124,7 @@ private fun NotesCard(model: NotesModel) {
             maxLines = 2, overflow = TextOverflow.Ellipsis
         )
         Text(
-            model.note,
+            model.content,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 10.dp),
