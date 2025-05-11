@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.quicknotes.db.AppDataBase
 import com.example.quicknotes.db.RoomStoreDao
+import com.example.quicknotes.ui.AppRepo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,5 +27,11 @@ object NoteModule {
     @Provides
     fun provideAppDao(appDataBase: AppDataBase): RoomStoreDao {
         return appDataBase.roomStoreDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRepo(roomStoreDao: RoomStoreDao): AppRepo {
+        return AppRepo(roomStoreDao)
     }
 }

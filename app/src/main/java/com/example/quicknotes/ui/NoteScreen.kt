@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -34,6 +36,7 @@ import com.example.quicknotes.ui.viewmodel.HomeViewModel
 //@Preview(showBackground = true)
 @Composable
 fun NoteScreen(homeViewModel: HomeViewModel, onBackPress: () -> Unit) {
+    val showDialog = remember { mutableStateOf(false) }
     var titleText by remember { mutableStateOf("") }
     var contentText by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -63,8 +66,7 @@ fun NoteScreen(homeViewModel: HomeViewModel, onBackPress: () -> Unit) {
             },
             isDelete = homeViewModel.getSelectedNote() != null,
             onDelete = {
-                homeViewModel.deleteNote(homeViewModel.getSelectedNote()!!)
-                onBackPress.invoke()
+                showDialog.value = true
             })
 
         HorizontalDivider(
@@ -98,6 +100,40 @@ fun NoteScreen(homeViewModel: HomeViewModel, onBackPress: () -> Unit) {
             )
         )
     }
+    if (showDialog.value) {
+        DialogScreen(onDismiss = { showDialog.value = false }, onConfirm = {
+            homeViewModel.deleteNote(homeViewModel.getSelectedNote()!!)
+            onBackPress.invoke()
+        })
+    }
+}
+
+@Composable
+fun DialogScreen(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = stringResource(android.R.string.dialog_alert_title))
+        },
+        text = {
+            Text(text = "Are you sure want to delete this?")
+        },
+        confirmButton = {
+            Button(onClick = {
+                onDismiss()
+                onConfirm()
+            }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = {
+                onDismiss()
+            }) {
+                Text("Dismiss")
+            }
+        }
+    )
 }
 
 @Composable
