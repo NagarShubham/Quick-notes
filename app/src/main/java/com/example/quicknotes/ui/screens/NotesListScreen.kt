@@ -1,4 +1,4 @@
-package com.example.mydemoproject.screens
+package com.example.quicknotes.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -38,10 +38,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.quicknotes.db.Note
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -412,7 +413,7 @@ private fun NoteCard(
             Spacer(modifier = Modifier.height(8.dp))
             NoteCardContent(content = note.content)
             Spacer(modifier = Modifier.height(12.dp))
-            Divider(
+            HorizontalDivider(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
                 thickness = 1.dp,
             )
@@ -584,7 +585,7 @@ private fun handleNoteDeletion(
     onDelete: (Note) -> Unit,
     onComplete: () -> Unit,
 ) {
-    kotlinx.coroutines.MainScope().launch(Dispatchers.IO) {
+    MainScope().launch(Dispatchers.IO) {
         delay(ANIMATION_DURATION)
         onDelete(note)
         onComplete()

@@ -11,7 +11,8 @@ composeBom = "2024.09.00"
 navVersion = "2.8.9"
 roomDbVersion = "2.6.1"
 hiltVersion = "2.51.1"
-hiltNavigation="1.1.0"
+hiltNavigation = "1.1.0"
+kspVersion = "2.0.21-1.0.27"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,5 +42,6 @@ hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", v
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-kapt = { id = "kotlin-kapt" }
+kotlin-ksp = { id = "com.google.devtools.ksp" }
+kotlin-parcelize = { id = "kotlin-parcelize" }
 hilt-android-plugins = { id = "com.google.dagger.hilt.android" }

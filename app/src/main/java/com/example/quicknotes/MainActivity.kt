@@ -36,7 +36,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.mydemoproject.screens.NotesListScreen
+import com.example.quicknotes.ui.screens.NotesListScreen
 import com.example.quicknotes.db.Note
 import com.example.quicknotes.ui.NotesViewModel
 import com.example.quicknotes.ui.screens.AddNoteScreen

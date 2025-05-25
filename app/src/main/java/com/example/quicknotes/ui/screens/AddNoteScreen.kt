@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
@@ -128,7 +128,7 @@ fun AddNoteScreen(
                             ),
                     ) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -196,7 +196,7 @@ fun AddNoteScreen(
                         FloatingActionButton(
                             onClick = {
                                 if (isValidNote) {
-                                    if (isEditMode && existingNote != null) {
+                                    if (isEditMode) {
                                         onNoteUpdated(existingNote, title, content)
                                     } else {
                                         onNoteAdded(title, content)
