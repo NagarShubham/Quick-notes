@@ -28,12 +28,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -61,10 +59,12 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.quicknotes.R
 import com.example.quicknotes.db.Note
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -222,10 +222,10 @@ private fun NotesListScaffold(
                                 ),
                         ) {
                             Icon(
-                                imageVector = if (isDarkTheme) {
-                                    Icons.Default.FavoriteBorder
+                                painter = if (isDarkTheme) {
+                                    painterResource(R.drawable.ic_light_mode_24dp)
                                 } else {
-                                    Icons.Default.Favorite
+                                    painterResource(R.drawable.ic_dark_mode_24dp)
                                 },
                                 contentDescription = if (isDarkTheme) {
                                     "Switch to Light Theme"
@@ -483,7 +483,7 @@ private fun NoteCardFooter(timestamp: Long) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            imageVector = Icons.Default.AccountCircle,
+            imageVector = Icons.Outlined.Info,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
