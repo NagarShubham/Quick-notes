@@ -80,8 +80,8 @@
 
 **1️⃣ Clone this beauty**
 ```bash
-git clone https://github.com/yourusername/MyDemoProject.git
-cd MyDemoProject
+git clone https://github.com/NagarShubham/Quick-notes.git
+cd Quick-notes
 ```
 
 **2️⃣ Open in Android Studio**
