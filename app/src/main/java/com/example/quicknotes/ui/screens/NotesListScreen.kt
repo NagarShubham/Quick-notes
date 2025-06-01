@@ -1,14 +1,20 @@
 package com.example.quicknotes.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +23,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,22 +32,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,9 +64,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -63,11 +77,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.example.quicknotes.R
 import com.example.quicknotes.db.Note
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -77,11 +89,8 @@ import java.util.Locale
 private const val ANIMATION_DURATION = 300L
 private const val DELETE_BUTTON_SCALE_EXPANDED = 1f
 private const val DELETE_BUTTON_SCALE_COLLAPSED = 0f
-private const val CARD_BACKGROUND_ALPHA = 0.3f
 private val DEFAULT_SPACING = 16.dp
 private val SMALL_SPACING = 8.dp
-private val TINY_SPACING = 4.dp
-private val DIALOG_CORNER_RADIUS = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,12 +104,15 @@ fun NotesListScreen(
 ) {
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
     var deletingNoteId by remember { mutableStateOf<String?>(null) }
+    var isGridView by rememberSaveable { mutableStateOf(false) }
 
     NotesListScaffold(
         notes = notes,
         onAddClick = onAddNoteClick,
         isDarkTheme = isDarkTheme,
         onThemeToggle = onThemeToggle,
+        isGridView = isGridView,
+        onViewToggle = { isGridView = !isGridView },
         content = { paddingValues ->
             NotesListContent(
                 notes = notes,
@@ -108,6 +120,7 @@ fun NotesListScreen(
                 deletingNoteId = deletingNoteId,
                 onDeleteClick = { noteToDelete = it },
                 onNoteClick = onEditNote,
+                isGridView = isGridView,
             )
         },
     )
@@ -136,17 +149,64 @@ private fun NotesListContent(
     deletingNoteId: String?,
     onDeleteClick: (Note) -> Unit,
     onNoteClick: (Note) -> Unit,
+    isGridView: Boolean,
 ) {
     if (notes.isEmpty()) {
         EmptyNotesMessage(paddingValues)
     } else {
-        NotesList(
-            notes = notes,
-            paddingValues = paddingValues,
-            deletingNoteId = deletingNoteId,
-            onDeleteClick = onDeleteClick,
-            onNoteClick = onNoteClick,
-        )
+        AnimatedContent(
+            targetState = isGridView,
+            transitionSpec = {
+                val enter = fadeIn(
+                    animationSpec = tween(
+                        durationMillis = 600,
+                        delayMillis = 150,
+                        easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+                    )
+                ) + scaleIn(
+                    animationSpec = tween(
+                        durationMillis = 600,
+                        delayMillis = 100,
+                        easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+                    ),
+                    initialScale = 0.98f
+                )
+
+                val exit = fadeOut(
+                    animationSpec = tween(
+                        durationMillis = 450,
+                        easing = CubicBezierEasing(0.4f, 0f, 0.6f, 1f)
+                    )
+                ) + scaleOut(
+                    animationSpec = tween(
+                        durationMillis = 450,
+                        easing = CubicBezierEasing(0.4f, 0f, 0.6f, 1f)
+                    ),
+                    targetScale = 1.02f
+                )
+
+                enter.togetherWith(exit)
+            },
+            label = "layout_transition"
+        ) { targetIsGridView ->
+            if (targetIsGridView) {
+                NotesGrid(
+                    notes = notes,
+                    paddingValues = paddingValues,
+                    deletingNoteId = deletingNoteId,
+                    onDeleteClick = onDeleteClick,
+                    onNoteClick = onNoteClick,
+                )
+            } else {
+                NotesList(
+                    notes = notes,
+                    paddingValues = paddingValues,
+                    deletingNoteId = deletingNoteId,
+                    onDeleteClick = onDeleteClick,
+                    onNoteClick = onNoteClick,
+                )
+            }
+        }
     }
 }
 
@@ -157,6 +217,8 @@ private fun NotesListScaffold(
     onAddClick: () -> Unit,
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
+    isGridView: Boolean,
+    onViewToggle: () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Box(
@@ -199,6 +261,61 @@ private fun NotesListScaffold(
                         actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ),
                     actions = {
+                        IconButton(
+                            onClick = onViewToggle,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(
+                                        alpha = 0.5f,
+                                    ),
+                                ),
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Animated transition between icons
+                                AnimatedContent(
+                                    targetState = isGridView,
+                                    transitionSpec = {
+                                        (fadeIn(animationSpec = tween(200)) +
+                                                scaleIn(
+                                                    initialScale = 0.7f,
+                                                    animationSpec = tween(200)
+                                                )).togetherWith(
+                                            fadeOut(animationSpec = tween(200)) +
+                                                    scaleOut(
+                                                        targetScale = 0.7f,
+                                                        animationSpec = tween(200)
+                                                    )
+                                        )
+                                    },
+                                    label = "icon_transition"
+                                ) { gridViewState ->
+                                    Icon(
+                                        painterResource(
+                                            if (gridViewState) {
+                                                R.drawable.ic_list_action
+                                            } else {
+                                                R.drawable.ic_round_grid_view
+                                            }
+                                        ),
+                                        contentDescription = if (gridViewState) {
+                                            "Switch to List View"
+                                        } else {
+                                            "Switch to Grid View"
+                                        },
+                                        modifier = Modifier
+                                            .size(24.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    )
+                                }
+                            }
+                        }
+
                         // Theme Toggle Button
                         val themeIconRotation by animateFloatAsState(
                             targetValue = if (isDarkTheme) 360f else 0f,
@@ -240,26 +357,6 @@ private fun NotesListScaffold(
                                         scaleY = 1 + (themeIconRotation / 360f) * 0.2f
                                     },
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
-
-                        // Add Note Button
-                        IconButton(
-                            onClick = onAddClick,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .size(48.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(
-                                        alpha = 0.5f,
-                                    ),
-                                    shape = CircleShape,
-                                ),
-                        ) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = "Add Note",
-                                modifier = Modifier.size(24.dp),
                             )
                         }
                     },
@@ -328,6 +425,7 @@ private fun EmptyNotesMessage(paddingValues: PaddingValues) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun NotesList(
     notes: List<Note>,
@@ -347,11 +445,59 @@ private fun NotesList(
             items = notes,
             key = { note -> note.id },
         ) { note ->
+            notes.indexOf(note)
             AnimatedNoteCard(
                 note = note,
                 isDeleting = note.id == deletingNoteId,
                 onDeleteClick = { onDeleteClick(note) },
                 onClick = { onNoteClick(note) },
+                isGridView = false,
+                modifier = Modifier.animateItemPlacement(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessVeryLow
+                    )
+                )
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NotesGrid(
+    notes: List<Note>,
+    paddingValues: PaddingValues,
+    deletingNoteId: String?,
+    onDeleteClick: (Note) -> Unit,
+    onNoteClick: (Note) -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
+        contentPadding = PaddingValues(DEFAULT_SPACING),
+        verticalArrangement = Arrangement.spacedBy(SMALL_SPACING),
+        horizontalArrangement = Arrangement.spacedBy(SMALL_SPACING),
+    ) {
+        items(
+            items = notes,
+            key = { note -> note.id },
+        ) { note ->
+            notes.indexOf(note)
+            AnimatedNoteCard(
+                note = note,
+                isDeleting = note.id == deletingNoteId,
+                onDeleteClick = { onDeleteClick(note) },
+                onClick = { onNoteClick(note) },
+                isGridView = true,
+                modifier = Modifier.animateItemPlacement(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessVeryLow
+                    )
+                )
             )
         }
     }
@@ -363,18 +509,77 @@ private fun AnimatedNoteCard(
     isDeleting: Boolean,
     onDeleteClick: () -> Unit,
     onClick: () -> Unit,
+    isGridView: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isDeleting) 0.85f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_scale"
+    )
+
+    val animatedAlpha by animateFloatAsState(
+        targetValue = if (isDeleting) 0.4f else 1f,
+        animationSpec = tween(
+            durationMillis = 400,
+            easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+        ),
+        label = "card_alpha"
+    )
+
     AnimatedVisibility(
         visible = !isDeleting,
-        enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut(),
+        enter = fadeIn(
+            animationSpec = tween(
+                durationMillis = 500,
+                easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+            )
+        ) + scaleIn(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            initialScale = 0.95f
+        ),
+        exit = fadeOut(
+            animationSpec = tween(
+                durationMillis = 350,
+                easing = CubicBezierEasing(0.4f, 0f, 0.6f, 1f)
+            )
+        ) + scaleOut(
+            animationSpec = tween(
+                durationMillis = 350,
+                easing = CubicBezierEasing(0.4f, 0f, 0.6f, 1f)
+            ),
+            targetScale = 0.85f
+        ),
     ) {
-        NoteCard(
-            note = note,
-            isDeleting = isDeleting,
-            onDeleteClick = onDeleteClick,
-            onClick = onClick,
-        )
+        Box(
+            modifier = Modifier
+                .graphicsLayer {
+                    scaleX = animatedScale
+                    scaleY = animatedScale
+                    alpha = animatedAlpha
+                }
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessVeryLow
+                    )
+                )
+                .then(modifier)
+        ) {
+            NoteCard(
+                note = note,
+                isDeleting = isDeleting,
+                onDeleteClick = onDeleteClick,
+                onClick = onClick,
+                isGridView = isGridView,
+            )
+        }
     }
 }
 
@@ -384,17 +589,47 @@ private fun NoteCard(
     isDeleting: Boolean,
     onDeleteClick: () -> Unit,
     onClick: () -> Unit,
+    isGridView: Boolean = false,
 ) {
+    val cardElevation by animateDpAsState(
+        targetValue = if (isGridView) 4.dp else 2.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessVeryLow
+        ),
+        label = "card_elevation"
+    )
+
+    val cardCornerRadius by animateDpAsState(
+        targetValue = if (isGridView) 20.dp else 16.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessVeryLow
+        ),
+        label = "card_corner_radius"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .then(
+                if (isGridView) {
+                    Modifier.aspectRatio(1f)
+                } else {
+                    Modifier.padding(vertical = 4.dp)
+                }
+            )
             .clickable(onClick = onClick)
-            .animateContentSize(),
-        shape = RoundedCornerShape(16.dp),
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessVeryLow
+                )
+            ),
+        shape = RoundedCornerShape(cardCornerRadius),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp,
+            defaultElevation = cardElevation,
+            pressedElevation = cardElevation + 2.dp,
         ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -402,23 +637,49 @@ private fun NoteCard(
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+                .padding(if (isGridView) 12.dp else 16.dp)
+                .fillMaxWidth()
+                .then(
+                    if (isGridView) {
+                        Modifier.fillMaxHeight()
+                    } else {
+                        Modifier
+                    }
+                ),
         ) {
             NoteCardHeader(
                 title = note.title,
                 isDeleting = isDeleting,
                 onDeleteClick = onDeleteClick,
+                isCompact = isGridView,
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            NoteCardContent(content = note.content)
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-                thickness = 1.dp,
+            Spacer(modifier = Modifier.height(if (isGridView) 4.dp else 8.dp))
+
+            if (isGridView) {
+                // In grid view, use weight to fill available space
+                Box(modifier = Modifier.weight(1f)) {
+                    NoteCardContent(
+                        content = note.content,
+                        maxLines = 4,
+                    )
+                }
+            } else {
+                NoteCardContent(
+                    content = note.content,
+                    maxLines = 3,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Divider(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
+                    thickness = 1.dp,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(if (isGridView) 4.dp else 8.dp))
+            NoteCardFooter(
+                timestamp = note.timestamp,
+                isCompact = isGridView,
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            NoteCardFooter(timestamp = note.timestamp)
         }
     }
 }
@@ -428,6 +689,7 @@ private fun NoteCardHeader(
     title: String,
     isDeleting: Boolean,
     onDeleteClick: () -> Unit,
+    isCompact: Boolean = false,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -436,10 +698,16 @@ private fun NoteCardHeader(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-            ),
-            maxLines = 1,
+            style = if (isCompact) {
+                MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                )
+            } else {
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            maxLines = if (isCompact) 2 else 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
@@ -453,46 +721,57 @@ private fun NoteCardHeader(
         )
         IconButton(
             onClick = onDeleteClick,
-            modifier = Modifier.scale(deleteButtonScale),
+            modifier = Modifier
+                .scale(deleteButtonScale)
+                .size(if (isCompact) 36.dp else 48.dp),
         ) {
             Icon(
                 Icons.Default.Delete,
                 contentDescription = "Delete Note",
                 tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                modifier = Modifier.size(if (isCompact) 20.dp else 24.dp),
             )
         }
     }
 }
 
 @Composable
-private fun NoteCardContent(content: String) {
+private fun NoteCardContent(
+    content: String,
+    maxLines: Int = 3,
+) {
     Text(
         text = content,
         style = MaterialTheme.typography.bodyLarge,
-        maxLines = 3,
+        maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
 @Composable
-private fun NoteCardFooter(timestamp: Long) {
+private fun NoteCardFooter(
+    timestamp: Long,
+    isCompact: Boolean = false,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            imageVector = Icons.Outlined.Info,
+            imageVector = Icons.Default.AccountCircle,
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(if (isCompact) 14.dp else 16.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = formatTimestamp(timestamp),
+            text = if (isCompact) formatTimestampCompact(timestamp) else formatTimestamp(timestamp),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -503,81 +782,40 @@ private fun DeleteNoteDialog(
     onDismiss: () -> Unit,
     onConfirm: (Note) -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(DEFAULT_SPACING),
-            shape = RoundedCornerShape(DIALOG_CORNER_RADIUS),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Delete Note",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+        },
+        text = {
+            Text(
+                "Are you sure you want to delete this note? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onConfirm(note)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                ),
             ) {
-                DeleteDialogContent(note.title)
-                DeleteDialogButtons(
-                    onDismiss = onDismiss,
-                    onConfirm = { onConfirm(note) },
-                )
+                Text("Delete")
             }
-        }
-    }
-}
-
-@Composable
-private fun DeleteDialogContent(noteTitle: String) {
-    Text(
-        text = "Delete Note",
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.onSurface,
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
     )
-
-    Spacer(modifier = Modifier.height(DEFAULT_SPACING))
-
-    Text(
-        text = "Are you sure you want to delete \"$noteTitle\"?",
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-}
-
-@Composable
-private fun DeleteDialogButtons(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(SMALL_SPACING),
-    ) {
-        OutlinedButton(
-            onClick = onDismiss,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-        ) {
-            Text("Cancel")
-        }
-
-        Button(
-            onClick = onConfirm,
-            modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError,
-            ),
-        ) {
-            Text("Delete")
-        }
-    }
 }
 
 private fun handleNoteDeletion(
@@ -585,7 +823,7 @@ private fun handleNoteDeletion(
     onDelete: (Note) -> Unit,
     onComplete: () -> Unit,
 ) {
-    MainScope().launch(Dispatchers.IO) {
+    kotlinx.coroutines.MainScope().launch(Dispatchers.IO) {
         delay(ANIMATION_DURATION)
         onDelete(note)
         onComplete()
@@ -594,5 +832,10 @@ private fun handleNoteDeletion(
 
 private fun formatTimestamp(timestamp: Long): String {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+    return dateFormat.format(Date(timestamp))
+}
+
+private fun formatTimestampCompact(timestamp: Long): String {
+    val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
     return dateFormat.format(Date(timestamp))
 }

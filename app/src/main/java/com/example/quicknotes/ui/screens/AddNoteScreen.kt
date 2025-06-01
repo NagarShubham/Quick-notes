@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -30,7 +32,6 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +58,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.quicknotes.db.Note
@@ -135,7 +139,40 @@ fun AddNoteScreen(
                     }
                 },
                 actions = {
+                    // Save/Update Button with animation
+                    AnimatedVisibility(
+                        visible = isValidNote,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically(),
+                    ) {
+                        IconButton(
+                            onClick = {
+                                if (isValidNote) {
+                                    if (isEditMode) {
+                                        onNoteUpdated(existingNote, title, content)
+                                    } else {
+                                        onNoteAdded(title, content)
+                                    }
+                                    onNavigateBack()
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = RoundedCornerShape(12.dp),
+                                ),
+                        ) {
+                            Icon(
+                                if (isEditMode) Icons.Default.Check else Icons.Default.Done,
+                                contentDescription = if (isEditMode) "Update Note" else "Save Note",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
+
                     if (isEditMode && onNoteDeleted != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = { showDeleteDialog = true },
                             modifier = Modifier
@@ -162,7 +199,7 @@ fun AddNoteScreen(
         },
         bottomBar = {
             AnimatedVisibility(
-                visible = isValidNote,
+                visible = content.isNotEmpty(),
                 enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
                 exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             ) {
@@ -174,44 +211,23 @@ fun AddNoteScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                modifier = Modifier.size(16.dp),
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "$wordCount words • $characterCount characters",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                    alpha = 0.7f,
-                                ),
-                            )
-                        }
-                        FloatingActionButton(
-                            onClick = {
-                                if (isValidNote) {
-                                    if (isEditMode) {
-                                        onNoteUpdated(existingNote, title, content)
-                                    } else {
-                                        onNoteAdded(title, content)
-                                    }
-                                    onNavigateBack()
-                                }
-                            },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ) {
-                            Icon(
-                                if (isEditMode) Icons.Default.Check else Icons.Default.Done,
-                                contentDescription = if (isEditMode) "Update Note" else "Save Note",
-                            )
-                        }
+                        Icon(
+                            Icons.Outlined.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "$wordCount words • $characterCount characters",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.7f,
+                            ),
+                        )
                     }
                 }
             }
@@ -221,6 +237,7 @@ fun AddNoteScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .padding(horizontal = 12.dp)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -228,8 +245,7 @@ fun AddNoteScreen(
                             MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
                         ),
                     ),
-                )
-                .padding(16.dp),
+                ),
         ) {
             // Title Section
             Surface(
@@ -242,6 +258,16 @@ fun AddNoteScreen(
                 TextField(
                     value = title,
                     onValueChange = { title = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            contentFocusRequester.requestFocus()
+                        },
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(titleFocusRequester),
@@ -281,6 +307,11 @@ fun AddNoteScreen(
                 TextField(
                     value = content,
                     onValueChange = { content = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Default,
+                    ),
                     modifier = Modifier
                         .fillMaxSize()
                         .focusRequester(contentFocusRequester),
