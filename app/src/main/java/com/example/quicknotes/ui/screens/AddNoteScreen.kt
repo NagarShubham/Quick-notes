@@ -56,6 +56,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.quicknotes.R
 import com.example.quicknotes.db.Note
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -78,8 +80,8 @@ fun AddNoteScreen(
     existingNote: Note? = null,
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf(existingNote?.title ?: "") }
-    var content by remember { mutableStateOf(existingNote?.content ?: "") }
+    var title by remember { mutableStateOf(existingNote?.title.orEmpty()) }
+    var content by remember { mutableStateOf(existingNote?.content.orEmpty()) }
     val isValidNote = title.isNotBlank() && content.isNotBlank()
     val isEditMode = existingNote != null
 
@@ -93,13 +95,14 @@ fun AddNoteScreen(
         titleFocusRequester.requestFocus()
     }
 
+    val titleResId = if (isEditMode) R.string.edit_note else R.string.new_note
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
                         Text(
-                            text = if (isEditMode) "Edit Note" else "New Note",
+                            text = stringResource(titleResId),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                             ),
@@ -133,7 +136,7 @@ fun AddNoteScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -165,7 +168,7 @@ fun AddNoteScreen(
                         ) {
                             Icon(
                                 if (isEditMode) Icons.Default.Check else Icons.Default.Done,
-                                contentDescription = if (isEditMode) "Update Note" else "Save Note",
+                                contentDescription = stringResource(if (isEditMode) R.string.update_note else R.string.save_note),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         }
@@ -186,7 +189,7 @@ fun AddNoteScreen(
                         ) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Delete Note",
+                                contentDescription = stringResource(R.string.delete_note),
                                 tint = MaterialTheme.colorScheme.onErrorContainer,
                             )
                         }
@@ -273,7 +276,7 @@ fun AddNoteScreen(
                         .focusRequester(titleFocusRequester),
                     placeholder = {
                         Text(
-                            "Enter title",
+                            stringResource(R.string.enter_title),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
                     },
@@ -317,7 +320,7 @@ fun AddNoteScreen(
                         .focusRequester(contentFocusRequester),
                     placeholder = {
                         Text(
-                            "Write your thoughts...",
+                            text = stringResource(R.string.write_your_thoughts),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         )
                     },
@@ -344,7 +347,7 @@ fun AddNoteScreen(
             onDismissRequest = { showDeleteDialog = false },
             title = {
                 Text(
-                    "Delete Note",
+                    stringResource(R.string.delete_note),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                     ),
@@ -352,7 +355,7 @@ fun AddNoteScreen(
             },
             text = {
                 Text(
-                    "Are you sure you want to delete this note? This action cannot be undone.",
+                    text = stringResource(R.string.delete_warning_message),
                     style = MaterialTheme.typography.bodyLarge,
                 )
             },
@@ -367,12 +370,12 @@ fun AddNoteScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                     ),
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 OutlinedButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             },
         )
