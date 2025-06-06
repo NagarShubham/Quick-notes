@@ -4,4 +4,22 @@
     <string name="note">Note</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="my_notes">My Notes</string>
+    <string name="edit_note">Edit Note</string>
+    <string name="new_note">New Note</string>
+    <string name="update_note">Update Note</string>
+    <string name="save_note">Save Note</string>
+    <string name="delete_note">Delete Note</string>
+    <string name="enter_title">Enter title</string>
+    <string name="add_note">Add Note</string>
+    <string name="no_notes_yet">No Notes Yet</string>
+    <string name="delete_warning_message">Are you sure you want to delete this note? This action cannot be undone.</string>
+    <string name="write_your_thoughts">Write your thoughts…</string>
+    <string name="switch_to_list_view">Switch to List View</string>
+    <string name="switch_to_grid_view">Switch to Grid View</string>
+    <string name="switch_to_light_theme">Switch to Light Theme</string>
+    <string name="switch_to_dark_theme">Switch to Dark Theme</string>
+    <string name="tap_the_button_to_create_your_first_note">Tap the + button to create your first note</string>
 </resources>

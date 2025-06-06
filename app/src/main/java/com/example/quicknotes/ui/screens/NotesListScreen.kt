@@ -74,6 +74,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -240,7 +241,7 @@ private fun NotesListScaffold(
                     title = {
                         Column {
                             Text(
-                                text = "My Notes",
+                                text = stringResource(R.string.my_notes),
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                 ),
@@ -304,9 +305,9 @@ private fun NotesListScaffold(
                                             }
                                         ),
                                         contentDescription = if (gridViewState) {
-                                            "Switch to List View"
+                                            stringResource(R.string.switch_to_list_view)
                                         } else {
-                                            "Switch to Grid View"
+                                            stringResource(R.string.switch_to_grid_view)
                                         },
                                         modifier = Modifier
                                             .size(24.dp),
@@ -345,9 +346,9 @@ private fun NotesListScaffold(
                                     painterResource(R.drawable.ic_dark_mode_24dp)
                                 },
                                 contentDescription = if (isDarkTheme) {
-                                    "Switch to Light Theme"
+                                    stringResource(R.string.switch_to_light_theme)
                                 } else {
-                                    "Switch to Dark Theme"
+                                    stringResource(R.string.switch_to_dark_theme)
                                 },
                                 modifier = Modifier
                                     .size(24.dp)
@@ -375,7 +376,7 @@ private fun NotesListScaffold(
                 ) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = "Add Note",
+                        contentDescription = stringResource(R.string.add_note),
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -409,7 +410,7 @@ private fun EmptyNotesMessage(paddingValues: PaddingValues) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No Notes Yet",
+                text = stringResource(R.string.no_notes_yet),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                 ),
@@ -417,7 +418,7 @@ private fun EmptyNotesMessage(paddingValues: PaddingValues) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Tap the + button to create your first note",
+                text = stringResource(R.string.tap_the_button_to_create_your_first_note),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -727,7 +728,7 @@ private fun NoteCardHeader(
         ) {
             Icon(
                 Icons.Default.Delete,
-                contentDescription = "Delete Note",
+                contentDescription = stringResource(R.string.delete_note),
                 tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
                 modifier = Modifier.size(if (isCompact) 20.dp else 24.dp),
             )
@@ -786,7 +787,7 @@ private fun DeleteNoteDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Delete Note",
+                stringResource(R.string.delete_note),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
                 ),
@@ -794,7 +795,7 @@ private fun DeleteNoteDialog(
         },
         text = {
             Text(
-                "Are you sure you want to delete this note? This action cannot be undone.",
+                stringResource(R.string.delete_warning_message),
                 style = MaterialTheme.typography.bodyLarge,
             )
         },
@@ -807,12 +808,12 @@ private fun DeleteNoteDialog(
                     containerColor = MaterialTheme.colorScheme.error,
                 ),
             ) {
-                Text("Delete")
+                Text(stringResource(R.string.delete))
             }
         },
         dismissButton = {
             OutlinedButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         },
     )
