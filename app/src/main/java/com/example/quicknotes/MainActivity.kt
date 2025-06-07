@@ -36,10 +36,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.quicknotes.ui.screens.NotesListScreen
+import com.example.quicknotes.common.NavigationRoutes
 import com.example.quicknotes.db.Note
 import com.example.quicknotes.ui.NotesViewModel
 import com.example.quicknotes.ui.screens.AddNoteScreen
+import com.example.quicknotes.ui.screens.NotesListScreen
 import com.example.quicknotes.ui.theme.DarkColorScheme
 import com.example.quicknotes.ui.theme.LightColorScheme
 import com.example.quicknotes.ui.theme.Typography
@@ -73,23 +74,23 @@ private fun MainContent() {
 
             NavHost(
                 navController = navController,
-                startDestination = "notes_list",
+                startDestination = NavigationRoutes.NoteListScreen.route,
             ) {
                 composable(
-                    route = "notes_list",
+                    route = NavigationRoutes.NoteListScreen.route,
                 ) {
                     val viewModel = hiltViewModel<NotesViewModel>()
                     val notes by viewModel.notes.collectAsState()
 
                     NotesListScreen(
                         notes = notes,
-                        onAddNoteClick = { navController.navigate("add_note") },
+                        onAddNoteClick = { navController.navigate(NavigationRoutes.AddNoteScreen.route) },
                         onDeleteNote = { viewModel.deleteNote(it) },
                         onEditNote = { note ->
                             val encodedTitle = Uri.encode(note.title)
                             val encodedContent = Uri.encode(note.content)
                             navController.navigate(
-                                "add_note?noteId=${note.id}&title=$encodedTitle&content=$encodedContent&timestamp=${note.timestamp}",
+                                "${NavigationRoutes.AddNoteScreen.route}?noteId=${note.id}&title=$encodedTitle&content=$encodedContent&timestamp=${note.timestamp}",
                             )
                         },
                         isDarkTheme = isDarkTheme,
@@ -98,7 +99,7 @@ private fun MainContent() {
                 }
 
                 composable(
-                    route = "add_note?noteId={noteId}&title={title}&content={content}&timestamp={timestamp}",
+                    route = "${NavigationRoutes.AddNoteScreen.route}?noteId={noteId}&title={title}&content={content}&timestamp={timestamp}",
                     arguments = listOf(
                         navArgument("noteId") {
                             type = NavType.StringType
