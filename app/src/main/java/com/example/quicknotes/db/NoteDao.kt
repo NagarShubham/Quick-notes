@@ -1,5 +1,10 @@
 package com.example.quicknotes.db
-import androidx.room.*
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -12,7 +17,4 @@ interface NoteDao {
 
     @Delete
     suspend fun deleteNote(note: Note)
-
-    @Query("SELECT * FROM notes WHERE id = :id")
-    suspend fun getNoteById(id: String): Note?
 }

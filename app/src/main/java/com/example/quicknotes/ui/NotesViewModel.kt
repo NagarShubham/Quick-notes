@@ -46,11 +46,4 @@ class NotesViewModel @Inject constructor(
             repository.deleteNote(note)
         }
     }
-
-    fun getNoteById(id: String, onResult: (Note?) -> Unit) {
-        viewModelScope.launch {
-            val note = repository.getNoteById(id)
-            onResult(note)
-        }
-    }
 }
