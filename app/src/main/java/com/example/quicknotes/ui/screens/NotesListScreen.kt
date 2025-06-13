@@ -73,12 +73,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.quicknotes.R
+import com.example.quicknotes.common.SecurePreferences
 import com.example.quicknotes.db.Note
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -103,9 +105,11 @@ fun NotesListScreen(
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val securePreferences = SecurePreferences(context)
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
     var deletingNoteId by remember { mutableStateOf<String?>(null) }
-    var isGridView by rememberSaveable { mutableStateOf(false) }
+    var isGridView by rememberSaveable { mutableStateOf(securePreferences.getIsGridBoolean()) }
 
     NotesListScaffold(
         notes = notes,
@@ -113,7 +117,10 @@ fun NotesListScreen(
         isDarkTheme = isDarkTheme,
         onThemeToggle = onThemeToggle,
         isGridView = isGridView,
-        onViewToggle = { isGridView = !isGridView },
+        onViewToggle = {
+            isGridView = !isGridView
+            securePreferences.saveIsGridBoolean(isGridView)
+        },
         content = { paddingValues ->
             NotesListContent(
                 notes = notes,
